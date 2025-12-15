@@ -2,39 +2,39 @@ import { Button } from "@/components"
 import { Table } from "@/components/ui/Table"
 import { Pen, Trash2 } from "lucide-react"
 import { useState } from "react"
-import { ParcoursFormModal } from "./components/ParcoursFormModal"
-import { useListParcours } from "./hooks/useListParcours"
-import { useDeleteParcours } from "./hooks/useDeleteParcours"
-import type { Parcours } from "./types"
+import { UeFormModal } from "./components/UeFormModal"
+import { useListUe } from "./hooks/useListUe"
+import { useDeleteUe } from "./hooks/useDeleteUe"
+import type { Ue } from "./types"
 
-export const ParcoursPage: React.FC = () => {
+export const UePage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false)
-  const [editingParcours, setEditingParcours] = useState<Parcours | null>(null)
+  const [editingUe, setEditingUe] = useState<Ue | null>(null)
 
-  const { data: parcours } = useListParcours()
-  const deleteParcourseMutation = useDeleteParcours()
+  const { data: ue } = useListUe()
+  const deleteUeeMutation = useDeleteUe()
 
   const handleOpenCreate = () => {
-    setEditingParcours(null)
+    setEditingUe(null)
     setModalOpen(true)
   }
 
-  const handleOpenEdit = (parcours: Parcours) => {
-    setEditingParcours(parcours)
+  const handleOpenEdit = (ue: Ue) => {
+    setEditingUe(ue)
     setModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setModalOpen(false)
-    setEditingParcours(null)
+    setEditingUe(null)
   }
 
-  const handleDelete = async (parcours: Parcours) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le parcours "${parcours.nomParcours}" ?`)) {
+  const handleDelete = async (ue: Ue) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le ue "${ue.numeroUe}" ?`)) {
       try {
-        await deleteParcourseMutation.mutateAsync(parcours.id)
+        await deleteUeeMutation.mutateAsync(ue.id)
       } catch (error) {
-        alert(`Erreur lors de la suppression du parcours: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+        alert(`Erreur lors de la suppression du ue: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
       }
     }
   }
@@ -46,18 +46,18 @@ export const ParcoursPage: React.FC = () => {
           onClick={handleOpenCreate}
           className="bg-gray-800 p-2 rounded-lg text-white"
         >
-          Ajouter un parcours
+          Ajouter une ue
         </Button>
       </div>
       <Table
-        data={parcours}
+        data={ue}
         columns={[
-          { key: "nomParcours", label: "Nom" },
-          { key: "anneeFormation", label: "Année" },
+          { key: "numeroUe", label: "Nom" },
+          { key: "intitule", label: "Intitule" },
           {
             key: "actions",
             label: "Actions",
-            render: (row: Parcours) => (
+            render: (row: Ue) => (
               <div className="flex items-center space-x-4">
                 <Button
                   onClick={() => handleOpenEdit(row)}
@@ -69,7 +69,7 @@ export const ParcoursPage: React.FC = () => {
                 <Button
                   onClick={() => handleDelete(row)}
                   className="hover:text-red-600 transition-colors"
-                  disabled={deleteParcourseMutation.isPending}
+                  disabled={deleteUeeMutation.isPending}
                   title="Supprimer"
                 >
                   <Trash2 className="w-5 h-5" />
@@ -79,9 +79,9 @@ export const ParcoursPage: React.FC = () => {
           },
         ]}
       />
-      <ParcoursFormModal
+      <UeFormModal
         isOpen={modalOpen}
-        editingParcours={editingParcours}
+        editingUe={editingUe}
         onClose={handleCloseModal}
       />
     </div>

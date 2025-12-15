@@ -10,3 +10,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@theme {
+  --color-primary: #0f172a;
+  --color-secondary: #f1f5f9;
+}
