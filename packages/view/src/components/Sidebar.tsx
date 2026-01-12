@@ -10,6 +10,7 @@ export function Sidebar() {
     { path: "/", label: "Accueil", icon: "🏠" },
     { path: "/parcours", label: "Parcours", icon: "📚" },
     { path: "/ue", label: "UE", icon: "📖" },
+    { path: "/etudiant", label: "Etudiants", icon: "👨‍🎓" },
   ]
 
   const isActive = (path: string) => {
@@ -52,8 +53,8 @@ export function Sidebar() {
             key={item.path}
             to={item.path}
             className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${isActive(item.path)
-                ? "bg-blue-100 text-blue-700 font-medium"
-                : "text-gray-700 hover:bg-gray-100"
+              ? "bg-blue-100 text-blue-700 font-medium"
+              : "text-gray-700 hover:bg-gray-100"
               }`}
             title={item.label}
           >

@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite"
 
-export const db = new Database("data.db")
+export const db = new Database("/home/tim/Cours/M1_ASIW_UniversiteFrontEnd_REACT/data.db")
 
 export const initDatabase = () => {
   db.run(`
