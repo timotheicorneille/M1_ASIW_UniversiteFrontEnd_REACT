@@ -1,21 +1,23 @@
-import { Input } from "@/components/ui/Input"
-import { InputSelect } from "@/components/ui/InputSelect"
-import { Modal } from "@/components/ui/Modal"
-import { useCreateParcours } from "../hooks/useCreateParcours"
-import { useUpdateParcours } from "../hooks/useUpdateParcours"
-import { useState, useEffect } from "react"
-import type { Parcours } from "../types"
-
-type FormState = {
-  id?: number
-  nomParcours: string
-  anneeFormation: string
-}
+import { useState, useEffect } from 'react';
+import {
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter
+} from '../../../components/modals-v2';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components';
+import { useCreateParcours } from '../hooks/useCreateParcours';
+import { useUpdateParcours } from '../hooks/useUpdateParcours';
+import { createParcoursSchema, updateParcoursSchema } from '../schemas';
+import type { Parcours } from '../types';
+import { z } from 'zod';
 
 interface ParcoursFormModalProps {
-  isOpen: boolean
-  editingParcours?: Parcours | null
-  onClose: () => void
+  isOpen: boolean;
+  editingParcours: Parcours | null;
+  onClose: () => void;
 }
 
 export const ParcoursFormModal: React.FC<ParcoursFormModalProps> = ({
@@ -23,122 +25,121 @@ export const ParcoursFormModal: React.FC<ParcoursFormModalProps> = ({
   editingParcours,
   onClose,
 }) => {
-  const [formState, setFormState] = useState<FormState>({
-    nomParcours: "",
-    anneeFormation: "1",
-  })
+  const [nomParcours, setNomParcours] = useState('');
+  const [anneeFormation, setAnneeFormation] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const createParcourseMutation = useCreateParcours()
-  const updateParcourseMutation = useUpdateParcours()
-
-  const isEditing = formState.id !== undefined
-  const isLoading =
-    createParcourseMutation.isPending || updateParcourseMutation.isPending
+  const createParcoursMutation = useCreateParcours();
+  const updateParcoursMutation = useUpdateParcours();
 
   useEffect(() => {
     if (isOpen) {
       if (editingParcours) {
-        setFormState({
-          id: editingParcours.id,
-          nomParcours: editingParcours.nomParcours,
-          anneeFormation: editingParcours.anneeFormation.toString(),
-        })
+        setNomParcours(editingParcours.nomParcours);
+        setAnneeFormation(editingParcours.anneeFormation?.toString() || '');
       } else {
-        setFormState({
-          nomParcours: "",
-          anneeFormation: "1",
-        })
+        setNomParcours('');
+        setAnneeFormation('');
+      }
+      setErrors({});
+    }
+  }, [editingParcours, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const payload = {
+      nomParcours,
+      anneeFormation: anneeFormation ? parseInt(anneeFormation) : undefined,
+    };
+
+    try {
+      // Validation avec Zod
+      if (editingParcours) {
+        updateParcoursSchema.parse(payload);
+        await updateParcoursMutation.mutateAsync({
+          id: editingParcours.id,
+          payload,
+        });
+      } else {
+        createParcoursSchema.parse(payload);
+        await createParcoursMutation.mutateAsync(payload);
+      }
+      onClose();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0].toString()] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+      } else {
+        alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
       }
     }
-  }, [isOpen, editingParcours])
-
-  const handleSubmit = async () => {
-    if (isEditing && formState.id) {
-      await updateParcourseMutation.mutateAsync(
-        {
-          id: formState.id,
-          payload: {
-            nomParcours: formState.nomParcours,
-            anneeFormation: parseInt(formState.anneeFormation),
-          },
-        },
-        {
-          onSuccess: () => {
-            onClose()
-          },
-          onError: (error) => {
-            alert(
-              `Erreur lors de la modification du parcours: ${error.message}`
-            )
-          },
-        }
-      )
-    } else {
-      await createParcourseMutation.mutateAsync(
-        {
-          nomParcours: formState.nomParcours,
-          anneeFormation: parseInt(formState.anneeFormation),
-        },
-        {
-          onSuccess: () => {
-            onClose()
-          },
-          onError: (error) => {
-            alert(`Erreur lors de la création du parcours: ${error.message}`)
-          },
-        }
-      )
-    }
-  }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="text-xl font-bold mb-4">
-        {isEditing ? "Modifier un parcours" : "Ajouter un parcours"}
-      </h2>
-      <Input
-        id="parcours-name"
-        label="Nom du parcours"
-        value={formState.nomParcours}
-        onChange={(e) =>
-          setFormState((prev) => ({ ...prev, nomParcours: e.target.value }))
-        }
-      />
-      <InputSelect
-        id="parcours-year"
-        label="Année"
-        options={[
-          { value: "1", label: "1ère année" },
-          { value: "2", label: "2ème année" },
-        ]}
-        value={formState.anneeFormation}
-        onChange={(value) =>
-          setFormState((prev) => ({ ...prev, anneeFormation: value }))
-        }
-      />
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={onClose}
-          disabled={isLoading}
-          className="p-2 rounded-lg "
-        >
-          Annuler
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading || !formState.nomParcours}
-          className="bg-gray-800 hover:bg-gray-600 disabled:bg-gray-400 p-2 rounded-lg text-white"
-        >
-          {isLoading
-            ? isEditing
-              ? "Modification..."
-              : "Création..."
-            : isEditing
-              ? "Modifier"
-              : "Créer"}
-        </button>
-      </div>
-    </Modal>
-  )
-}
+      <ModalHeader variant="default">
+        <ModalTitle size="default">
+          {editingParcours ? "Modifier le parcours" : "Ajouter un parcours"}
+        </ModalTitle>
+      </ModalHeader>
 
+      <form onSubmit={handleSubmit}>
+        <ModalBody className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nom du parcours</label>
+            <Input
+              type="text"
+              value={nomParcours}
+              onChange={(e) => setNomParcours(e.target.value)}
+              placeholder="Nom du parcours"
+              id="nomParcours"
+              label=""
+            />
+            {errors.nomParcours && (
+              <p className="text-red-500 text-sm mt-1">{errors.nomParcours}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Année de formation</label>
+            <Input
+              type="number"
+              value={anneeFormation}
+              onChange={(e) => setAnneeFormation(e.target.value)}
+              placeholder="Année de formation"
+              id="anneeFormation"
+              label=""
+            />
+            {errors.anneeFormation && (
+              <p className="text-red-500 text-sm mt-1">{errors.anneeFormation}</p>
+            )}
+          </div>
+        </ModalBody>
+
+        <ModalFooter align="right" gap="default">
+          <Button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-300 text-gray-800 p-2 rounded-lg"
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            className="bg-gray-800 text-white p-2 rounded-lg"
+            disabled={createParcoursMutation.isPending || updateParcoursMutation.isPending}
+          >
+            {editingParcours ? "Modifier" : "Créer"}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
+  );
+};

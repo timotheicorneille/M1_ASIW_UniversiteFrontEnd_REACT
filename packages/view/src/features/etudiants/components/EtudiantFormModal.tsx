@@ -1,4 +1,3 @@
-// view/src/features/etudiants/components/EtudiantFormModalV2.tsx
 import { useState, useEffect } from 'react';
 import {
   Modal,
@@ -11,7 +10,9 @@ import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components';
 import { useCreateEtudiant } from '../hooks/useCreateEtudiant';
 import { useUpdateEtudiant } from '../hooks/useUpdateEtudiant';
-import type { Etudiant, CreateEtudiantPayload, UpdateEtudiantPayload } from '../types';
+import { createEtudiantSchema, updateEtudiantSchema } from '../schemas';
+import type { Etudiant } from '../types';
+import { z } from 'zod';
 
 interface EtudiantFormModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
   const [prenom, setPrenom] = useState('');
   const [email, setEmail] = useState('');
   const [parcoursId, setParcoursId] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createEtudiantMutation = useCreateEtudiant();
   const updateEtudiantMutation = useUpdateEtudiant();
@@ -45,13 +47,15 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
         setEmail('');
         setParcoursId('');
       }
+      setErrors({});
     }
   }, [editingEtudiant, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
 
-    const payload: CreateEtudiantPayload | UpdateEtudiantPayload = {
+    const payload = {
       nom,
       prenom,
       email,
@@ -59,17 +63,30 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
     };
 
     try {
+      // Validation avec Zod
       if (editingEtudiant) {
+        updateEtudiantSchema.parse(payload);
         await updateEtudiantMutation.mutateAsync({
           id: editingEtudiant.id,
           payload,
         });
       } else {
-        await createEtudiantMutation.mutateAsync(payload as CreateEtudiantPayload);
+        createEtudiantSchema.parse(payload);
+        await createEtudiantMutation.mutateAsync(payload);
       }
       onClose();
     } catch (error) {
-      alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0].toString()] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+      } else {
+        alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      }
     }
   };
 
@@ -89,9 +106,13 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
               type="text"
               value={nom}
               onChange={(e) => setNom(e.target.value)}
-              required
-              placeholder="Nom de l'étudiant" id={''} label={''}
+              placeholder="Nom de l'étudiant"
+              id="nom"
+              label=""
             />
+            {errors.nom && (
+              <p className="text-red-500 text-sm mt-1">{errors.nom}</p>
+            )}
           </div>
 
           <div>
@@ -100,9 +121,13 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
               type="text"
               value={prenom}
               onChange={(e) => setPrenom(e.target.value)}
-              required
-              placeholder="Prénom de l'étudiant" id={''} label={''}
+              placeholder="Prénom de l'étudiant"
+              id="prenom"
+              label=""
             />
+            {errors.prenom && (
+              <p className="text-red-500 text-sm mt-1">{errors.prenom}</p>
+            )}
           </div>
 
           <div>
@@ -111,9 +136,13 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="email@example.com" id={''} label={''}
+              placeholder="email@example.com"
+              id="email"
+              label=""
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
 
           <div>
@@ -122,8 +151,13 @@ export const EtudiantFormModal: React.FC<EtudiantFormModalProps> = ({
               type="number"
               value={parcoursId}
               onChange={(e) => setParcoursId(e.target.value)}
-              placeholder="ID du parcours" id={''} label={''}
+              placeholder="ID du parcours"
+              id="parcoursId"
+              label=""
             />
+            {errors.parcours_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.parcours_id}</p>
+            )}
           </div>
         </ModalBody>
 
