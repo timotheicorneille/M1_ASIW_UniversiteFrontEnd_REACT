@@ -6,7 +6,7 @@ WORKDIR /app
 FROM base AS install
 RUN mkdir -p /temp/prod
 COPY package.json bun.lock* /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+RUN cd /temp/prod && bun install --production
 
 # Copy source and build
 FROM base AS build
