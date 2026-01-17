@@ -1,21 +1,24 @@
-import { cn } from "@/utils/cn"
-import { useState } from "react"
-import { Link, useLocation } from "react-router"
+import { cn } from "@/utils/cn";
+import { useState } from "react";
+import { Link, useLocation } from "react-router";
+import { usePanierStore, selectPanierCount } from "../stores/panierStore";
 
 export function Sidebar() {
-  const location = useLocation()
-  const [isOpen, setIsOpen] = useState(true)
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(true);
+  const panierCount = usePanierStore(selectPanierCount);
 
   const menuItems = [
     { path: "/", label: "Accueil", icon: "🏠" },
     { path: "/parcours", label: "Parcours", icon: "📚" },
     { path: "/ue", label: "UE", icon: "📖" },
     { path: "/etudiant", label: "Etudiants", icon: "👨‍🎓" },
-  ]
+    { path: "/panier", label: "Panier", icon: "🧺", badge: panierCount },
+  ];
 
   const isActive = (path: string) => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   return (
     <div
@@ -46,25 +49,36 @@ export function Sidebar() {
           {isOpen ? "←" : "→"}
         </button>
       </div>
-
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors ${isActive(item.path)
-              ? "bg-blue-100 text-blue-700 font-medium"
-              : "text-gray-700 hover:bg-gray-100"
-              }`}
+            className={cn(
+              "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors relative",
+              isActive(item.path)
+                ? "bg-blue-100 text-blue-700 font-medium"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
             title={item.label}
           >
             <span className="text-xl">{item.icon}</span>
-            <span className={`${isOpen ? "block" : "hidden"}`}>
+            <span className={cn(isOpen ? "block" : "hidden")}>
               {item.label}
             </span>
+            {item.badge !== undefined && item.badge > 0 && (
+              <span
+                className={cn(
+                  "bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full",
+                  isOpen ? "ml-auto" : "absolute -top-1 -right-1"
+                )}
+              >
+                {item.badge}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
     </div>
-  )
+  );
 }

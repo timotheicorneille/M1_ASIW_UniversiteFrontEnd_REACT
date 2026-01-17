@@ -11,5 +11,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "zustand": "^5.0.10"
   }
 }

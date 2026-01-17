@@ -4,6 +4,7 @@ import { HomePage } from "@/features/home/HomePage";
 import { ParcoursPage } from "@/features/parcours/ParcoursPage";
 import { UePage } from "@/features/ue/UePage";
 import { EtudiantPage } from "@/features/etudiants/EtudiantPage";
+import { PanierPage } from "@/features/panier/PanierPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
       {
         path: "etudiant",
         element: <EtudiantPage />,
+      },
+      {
+        path: "panier",
+        element: <PanierPage />,
       }
     ],
   },
