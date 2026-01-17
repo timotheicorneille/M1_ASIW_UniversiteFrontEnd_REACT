@@ -1,0 +1,40 @@
+# .dockerignore (à la racine et dans chaque package)
+
+# Dependencies
+node_modules
+npm-debug.log
+bun.lockb
+
+# Build outputs
+dist
+build
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Testing
+coverage
+.nyc_output
+
+# SQLite (on veut que la DB soit dans un volume, pas dans l'image)
+*.db
+*.db-shm
+*.db-wal

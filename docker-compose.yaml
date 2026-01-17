@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ./packages/back
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      # Persister la DB SQLite
+      - sqlite_data:/app/src/server
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./packages/view
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://backend:3001
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=/api
+
+volumes:
+  sqlite_data:
+    driver: local
