@@ -6,6 +6,9 @@ type Props = {
   children: React.ReactNode
 }
 
+/**
+* @deprecated Use ModalV2 instad
+*/
 export const Modal: React.FC<Props> = ({ isOpen, onClose, children }) => {
   const modalRef = useRef<HTMLDivElement>(null)
 
