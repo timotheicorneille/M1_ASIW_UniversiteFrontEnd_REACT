@@ -5,7 +5,7 @@ import { useState } from "react";
 import { UeFormModal } from "./components/UeFormModal";
 import { useListUe } from "./hooks/useListUe";
 import { useDeleteUe } from "./hooks/useDeleteUe";
-import { usePanierStore } from "../../stores/panierStore";
+import { usePanierStore, type PanierStore, type UEPanier } from "../../stores/panierStore";
 import { PanierSummary } from "../panier/components/PanierSummary";
 import type { Ue } from "./types";
 
@@ -17,9 +17,9 @@ export const UePage: React.FC = () => {
   const deleteUeMutation = useDeleteUe();
 
   // Actions du panier
-  const ajouterUE = usePanierStore((state) => state.ajouterUE);
-  const retirerUE = usePanierStore((state) => state.retirerUE);
-  const panier = usePanierStore((state) => state.panier);
+  const ajouterUE = usePanierStore((state: PanierStore) => state.ajouterUE);
+  const retirerUE = usePanierStore((state: PanierStore) => state.retirerUE);
+  const panier = usePanierStore((state: PanierStore) => state.panier);
 
   const handleOpenCreate = () => {
     setEditingUe(null);
@@ -41,7 +41,7 @@ export const UePage: React.FC = () => {
       try {
         await deleteUeMutation.mutateAsync(ue.id);
         // Retirer l'UE du panier si elle y est
-        if (panier.some(u => u.id === ue.id)) {
+        if (panier.some((u: UEPanier) => u.id === ue.id)) {
           retirerUE(ue.id);
         }
       } catch (error) {
@@ -51,7 +51,7 @@ export const UePage: React.FC = () => {
   };
 
   const handleTogglePanier = (ue: Ue) => {
-    const estDansPanier = panier.some(u => u.id === ue.id);
+    const estDansPanier = panier.some((u: UEPanier) => u.id === ue.id);
 
     if (estDansPanier) {
       retirerUE(ue.id);
@@ -61,7 +61,7 @@ export const UePage: React.FC = () => {
         numeroUe: ue.numeroUe,
         intitule: ue.intitule,
         ajouteA: new Date().toISOString(),
-      });
+      } as UEPanier);
     }
   };
 
@@ -86,7 +86,7 @@ export const UePage: React.FC = () => {
             key: "panier",
             label: "Panier",
             render: (row: Ue) => {
-              const dansPanier = panier.some(u => u.id === row.id);
+              const dansPanier = panier.some((u: UEPanier) => u.id === row.id);
               return (
                 <Button
                   onClick={() => handleTogglePanier(row)}

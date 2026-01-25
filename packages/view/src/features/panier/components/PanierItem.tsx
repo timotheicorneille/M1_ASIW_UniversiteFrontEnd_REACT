@@ -1,13 +1,13 @@
 import { Trash2 } from 'lucide-react';
 import { Button } from '../../../components';
-import { usePanierStore, type UEPanier } from '../../../stores/panierStore';
+import { usePanierStore, type UEPanier, type PanierStore } from '../../../stores/panierStore';
 
 type PanierItemProps = {
   ue: UEPanier;
 };
 
 export const PanierItem = ({ ue }: PanierItemProps) => {
-  const retirerUE = usePanierStore((state) => state.retirerUE);
+  const retirerUE = usePanierStore((state: PanierStore) => state.retirerUE);
 
   return (
     <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">

@@ -1,13 +1,13 @@
 import { Button } from '../../components';
 import { Undo2, Trash2, CheckCircle } from 'lucide-react';
-import { usePanierStore, selectPanier, selectPeutAnnuler } from '../../stores/panierStore';
+import { usePanierStore, selectPanier, selectPeutAnnuler, type PanierStore, type UEPanier } from '../../stores/panierStore';
 import { PanierItem } from './components/PanierItem';
 
 export const PanierPage = () => {
   const panier = usePanierStore(selectPanier);
   const peutAnnuler = usePanierStore(selectPeutAnnuler);
-  const annuler = usePanierStore((state) => state.annuler);
-  const viderPanier = usePanierStore((state) => state.viderPanier);
+  const annuler = usePanierStore((state: PanierStore) => state.annuler);
+  const viderPanier = usePanierStore((state: PanierStore) => state.viderPanier);
 
   const handleValider = () => {
     if (panier.length === 0) {
@@ -78,7 +78,7 @@ export const PanierPage = () => {
       </div>
 
       <div className="space-y-3">
-        {panier.map((ue) => (
+        {panier.map((ue: UEPanier) => (
           <PanierItem key={ue.id} ue={ue} />
         ))}
       </div>
